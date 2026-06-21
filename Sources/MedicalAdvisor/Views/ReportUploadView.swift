@@ -54,7 +54,7 @@ struct ReportUploadView: View {
                 Text("Камера будет интегрирована через VisionKit в следующем обновлении.")
                     .padding()
             }
-            .onChange(of: selectedItem) { oldValue, newValue in
+            .onChange(of: selectedItem) { newValue in
                 if let item = newValue {
                     let mockReport = LabReport(
                         id: UUID(),
