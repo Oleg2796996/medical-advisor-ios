@@ -1,186 +1,73 @@
-//
-//  ReportUploadView.swift
-//  MedicalAdvisor
-//
-//  Upload lab report (PDF/photo) → parse → display
-//
-
 import SwiftUI
-import UIKit
+import PhotosUI
 
 struct ReportUploadView: View {
-    @Environment(\.dismiss) private var dismiss
-    @StateObject private var appState = AppState()
-    @State private var isScanning = false
-    @State private var selectedImage: UIImage?
-    @State private var previewURL: URL?
-    @State private var analysis: Analysis?
+    @State private var appState = AppState()
+    @State private var isShowingPicker = false
+    @State private var selectedItem: PhotosPickerItem?
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // ── Upload Area ───────────────────────────────
-                    VStack(spacing: 16) {
-                        // Preview
-                        if let image = selectedImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 300)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .shadow(radius: 4)
-                        } else {
-                            // Upload placeholder
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(.secondarySystemBackground))
-                                    .frame(height: 200)
-                                
-                                VStack(spacing: 12) {
-                                    Image(systemName: "camera.fill")
-                                        .font(.system(size: 32))
-                                        .foregroundColor(.blue)
-                                    Text("Take a photo or upload a PDF")
-                                        .font(.headline)
-                                    Text("Lab reports, blood tests, check-ups")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
+            VStack(spacing: 20) {
+                Text("Загрузка отчета").font(.title.bold()).padding(.top, 20)
+                
+                VStack(spacing: 15) {
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                        HStack {
+                            Image(systemName: "photo.on.rectangle.angled")
+                            Text("Выбрать фото из галереи")
                         }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(10)
                     }
                     
-                    // ── Action Buttons ──────────────────────────────
-                    VStack(spacing: 12) {
-                        // Camera button
-                        Button(action: openCamera) {
-                            HStack {
-                                Image(systemName: "camera.fill")
-                                Text("Take Photo")
-                                    .bold()
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundStyle(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    Button(action: { isShowingPicker = true }) {
+                        HStack {
+                            Image(systemName: "camera.fill")
+                            Text("Сделать фото")
                         }
-                        
-                        // Photo library button
-                        Button(action: openPhotoLibrary) {
-                            HStack {
-                                Image(systemName: "photo.fill")
-                                Text("Choose from Library")
-                                    .bold()
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(.systemGray5))
-                            .foregroundStyle(.primary)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        
-                        // Analyze button (if image selected)
-                        if selectedImage != nil || isScanning {
-                            Button(action: analyzeReport) {
-                                HStack {
-                                    if isScanning {
-                                        ProgressView()
-                                            .scaleEffect(0.8)
-                                    } else {
-                                        Image(systemName: "magnifyingglass")
-                                    }
-                                    Text(isScanning ? "Analyzing..." : "Analyze Results")
-                                        .bold()
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(isScanning ? Color.gray : Color.green)
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            .disabled(isScanning)
-                        }
-                    }
-                    
-                    // ── Analysis Results ────────────────────────────
-                    if let analysis = analysis {
-                        AnalysisResultsView(analysis: analysis)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     }
                 }
                 .padding()
+                
+                Spacer()
+                
+                Text("После загрузки AI проанализирует показатели и сравнит их с референсными значениями.").multilineTextAlignment(.center).foregroundColor(.secondary).padding()
             }
-            .navigationTitle("Upload Report")
+            .navigationTitle("Загрузка")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Отмена") {
+                        // Action to dismiss
+                    }
                 }
             }
-            .sheet(item: $previewURL) { url in
-                // PDF viewer or image preview
-                PreviewView(url: url)
+            .sheet(isPresented: $isShowingPicker) {
+                Text("Камера будет интегрирована через VisionKit в следующем обновлении.")
+                    .padding()
             }
-        }
-    }
-    
-    // ── Actions ───────────────────────────────────────────────────
-    
-    private func openCamera() {
-        // In real app: use UIImagePickerController / PHPicker
-        // For MVP: simulate with mock data
-        loadMockData()
-    }
-    
-    private func openPhotoLibrary() {
-        loadMockData()
-    }
-    
-    private func analyzeReport() {
-        isScanning = true
-        // Simulate analysis delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            let report = mockReport()
-            self.analysis = appState.analyze(report: report)
-            self.isScanning = false
-        }
-    }
-    
-    // ── Mock Data ─────────────────────────────────────────────────
-    
-    private func mockReport() -> LabReport {
-        LabReport(
-            id: UUID(),
-            labName: "LABCORP",
-            reportDate: "06/15/2026",
-            patientName: "Test User",
-            patientAge: 35,
-            patientSex: "M",
-            results: [
-                LabResult(testName: "Glucose", internalKey: "glucose_fasting", value: 115, unit: "mg/dL", referenceMin: 70, referenceMax: 100, flag: .high),
-                LabResult(testName: "HbA1c", internalKey: "hba1c", value: 5.8, unit: "%", referenceMin: 4.0, referenceMax: 5.6, flag: .high),
-                LabResult(testName: "LDL", internalKey: "ldl", value: 135, unit: "mg/dL", referenceMin: 0, referenceMax: 100, flag: .high),
-                LabResult(testName: "Total Cholesterol", internalKey: "total_cholesterol", value: 215, unit: "mg/dL", referenceMin: 0, referenceMax: 200, flag: .high),
-                LabResult(testName: "Triglycerides", internalKey: "triglycerides", value: 165, unit: "mg/dL", referenceMin: 0, referenceMax: 150, flag: .high),
-                LabResult(testName: "Ferritin", internalKey: "ferritin", value: 15, unit: "ng/mL", referenceMin: 24, referenceMax: 336, flag: .low),
-                LabResult(testName: "Vitamin D", internalKey: "vitamin_d_25oh", value: 18, unit: "ng/mL", referenceMin: 20, referenceMax: 100, flag: .low),
-                LabResult(testName: "Hemoglobin", internalKey: "hemoglobin", value: 14.2, unit: "g/dL", referenceMin: 13.5, referenceMax: 17.5, flag: .normal),
-                LabResult(testName: "TSH", internalKey: "tsh", value: 3.2, unit: "mIU/L", referenceMin: 0.4, referenceMax: 4.0, flag: .normal),
-                LabResult(testName: "ALT", internalKey: "alt", value: 42, unit: "U/L", referenceMin: 7, referenceMax: 56, flag: .normal),
-            ],
-            createdAt: Date()
-        )
-    }
-    
-    private func loadMockData() {
-        // For MVP demo: show analysis immediately
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            isScanning = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                let report = mockReport()
-                analysis = appState.analyze(report: report)
-                isScanning = false
+            .onChange(of: selectedItem) { oldValue, newValue in
+                if let item = newValue {
+                    // Simulate upload and analysis
+                    let mockReport = LabReport(
+                        id: UUID(),
+                        labName: "Инвитро",
+                        reportDate: "21.06.2026",
+                        results: [
+                            LabResult(testName: "Глюкоза", internalKey: "glucose_fasting", value: "6.2", unit: "ммоль/л", abnormal: true, flag: .warning),
+                            LabResult(testName: "Ферритин", internalKey: "ferritin", value: "12", unit: "нг/мл", abnormal: true, flag: .critical)
+                        ]
+                    )
+                    appState.reports.append(mockReport)
+                }
             }
         }
     }
