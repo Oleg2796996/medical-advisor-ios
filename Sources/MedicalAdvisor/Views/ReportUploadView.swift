@@ -56,7 +56,6 @@ struct ReportUploadView: View {
             }
             .onChange(of: selectedItem) { oldValue, newValue in
                 if let item = newValue {
-                    // Simulate upload and analysis
                     let mockReport = LabReport(
                         id: UUID(),
                         labName: "Инвитро",
