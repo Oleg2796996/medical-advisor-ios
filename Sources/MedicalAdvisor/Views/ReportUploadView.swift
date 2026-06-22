@@ -60,10 +60,14 @@ struct ReportUploadView: View {
                         id: UUID(),
                         labName: "Инвитро",
                         reportDate: "21.06.2026",
+                        patientName: "Иван Иванов",
+                        patientAge: 30,
+                        patientSex: "Male",
                         results: [
-                            LabResult(testName: "Глюкоза", internalKey: "glucose_fasting", value: "6.2", unit: "ммоль/л", abnormal: true, flag: .warning),
-                            LabResult(testName: "Ферритин", internalKey: "ferritin", value: "12", unit: "нг/мл", abnormal: true, flag: .critical)
-                        ]
+                            LabResult(testName: "Глюкоза", internalKey: "glucose_fasting", value: 6.2, unit: "ммоль/л", flag: .high),
+                            LabResult(testName: "Ферритин", internalKey: "ferritin", value: 12.0, unit: "нг/мл", flag: .criticalLow)
+                        ],
+                        createdAt: Date()
                     )
                     appState.reports.append(mockReport)
                 }
