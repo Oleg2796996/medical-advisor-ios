@@ -10,4 +10,5 @@ targets:
     settings:
       base:
         SWIFT_VERSION: 5.9
+        PRODUCT_TYPE: com.apple.product-type.application
     sources: [Sources]
