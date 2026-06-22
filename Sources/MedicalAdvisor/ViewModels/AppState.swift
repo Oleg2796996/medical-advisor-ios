@@ -18,7 +18,14 @@ class AppState {
         var findings: [Finding] = []
         for test in abnormalTests {
             if let info = testRecommendations[test.internalKey] {
-                findings.append(Finding(severity: test.flag, title: info.desc, description: "Показатель \(test.value) \(test.unit) вне нормы.", recommendation: info.rec, testsAffected: [test.testName]))
+                findings.append(Finding(
+                    id: UUID(),
+                    severity: test.flag == .criticalLow || test.flag == .criticalHigh ? .critical : .warning, 
+                    title: info.desc, 
+                    description: "Показатель \(test.value) \(test.unit) вне нормы.", 
+                    recommendation: info.rec, 
+                    testsAffected: [test.testName]
+                ))
             }
         }
         return Analysis(
