@@ -1,0 +1,13 @@
+name: MedicalAdvisor
+options:
+  bundleId: com.oleg.MedicalAdvisor
+  deploymentTarget: "17.0"
+
+targets:
+  MedicalAdvisor:
+    product: App
+    platform: iOS
+    settings:
+      base:
+        SWIFT_VERSION: 5.9
+    sources: [Sources]
