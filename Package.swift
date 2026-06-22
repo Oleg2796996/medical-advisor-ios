@@ -4,6 +4,6 @@ import PackageDescription
 let package = Package(
     name: "MedicalAdvisor",
     platforms: [.iOS(.v17)],
-    products: [.library(name: "MedicalAdvisor", targets: ["MedicalAdvisor"])],
+    products: [.executable(name: "MedicalAdvisor", targets: ["MedicalAdvisor"])],
     targets: [.target(name: "MedicalAdvisor", dependencies: [])]
 )
